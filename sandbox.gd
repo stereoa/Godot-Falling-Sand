@@ -1,16 +1,18 @@
 extends Node2D
 
-# Grid settings
 var width: int
 var height: int
-var cell_size = 10 # Size of each grain on screen
+var cell_size = 10 
+
 var grid = []
 
-# Cell types
-enum { EMPTY, SAND, WATER }
+enum Type { EMPTY, SAND, WATER }
 
-# Add a variable to track what you are currently drawing
-var current_type = SAND
+var behaviors = {
+	Type.SAND: SandElement,
+	Type.WATER: WaterElement
+}
+var current_type = Type.WATER
 
 func _ready():
 	# Get the actual screen size in pixels
@@ -24,7 +26,7 @@ func _ready():
 	for x in range(width):
 		grid.append([])
 		for y in range(height):
-			grid[x].append(EMPTY)
+			grid[x].append(Type.EMPTY)
 
 func _input(event):
 	# Handles touch and drag for Android
@@ -34,33 +36,30 @@ func _input(event):
 		
 		# Boundary check
 		if grid_x >= 0 and grid_x < width and grid_y >= 0 and grid_y < height:
-			grid[grid_x][grid_y] = SAND
+			grid[grid_x][grid_y] = current_type
 
 func _process(_delta):
-	update_sand()
+	update_physics()
 	queue_redraw()
-
-func update_sand():
-	# Loop backwards from bottom to top
-	for x in range(width):
-		for y in range(height - 2, -1, -1):
-			if grid[x][y] == SAND:
-				# 1. Down
-				if grid[x][y + 1] == EMPTY:
-					grid[x][y + 1] = SAND
-					grid[x][y] = EMPTY
-				# 2. Diagonal Down-Left
-				elif x > 0 and grid[x - 1][y + 1] == EMPTY:
-					grid[x - 1][y + 1] = SAND
-					grid[x][y] = EMPTY
-				# 3. Diagonal Down-Right
-				elif x < width - 1 and grid[x + 1][y + 1] == EMPTY:
-					grid[x + 1][y + 1] = SAND
-					grid[x][y] = EMPTY
 
 func _draw():
 	for x in range(width):
 		for y in range(height):
-			if grid[x][y] == SAND:
-				var rect = Rect2(x * cell_size, y * cell_size, cell_size, cell_size)
-				draw_rect(rect, Color.SANDY_BROWN)
+			var type = grid[x][y]
+			if type != Type.EMPTY:
+				draw_rect(Rect2(x*cell_size, y*cell_size, cell_size, cell_size), behaviors[type].get_color())
+
+
+func update_physics():
+	# Loop bottom-to-top
+	for x in range(width):
+		for y in range(height - 1, -1, -1):
+			var type = grid[x][y]
+			if type == Type.EMPTY: continue
+			
+			var logic = behaviors[type]
+			var next_pos = logic.move(x, y, grid, width, height)
+			
+			if next_pos:
+				grid[next_pos.x][next_pos.y] = type
+				grid[x][y] = Type.EMPTY
