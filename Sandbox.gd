@@ -7,7 +7,10 @@ var cell_size = 10 # Size of each grain on screen
 var grid = []
 
 # Cell types
-enum { EMPTY, SAND }
+enum { EMPTY, SAND, WATER }
+
+# Add a variable to track what you are currently drawing
+var current_type = SAND
 
 func _ready():
 	# Get the actual screen size in pixels
