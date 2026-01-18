@@ -6,3 +6,5 @@
 script = ExtResource("1_y8ncq")
 
 [node name="Particles" type="Node2D" parent="."]
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]

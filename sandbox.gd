@@ -22,8 +22,7 @@ func _ready():
 	# Calculate how many cells fit based on your cell_size
 	width = int(screen_size.x / cell_size)
 	height = int(screen_size.y / cell_size)
-	print(screen_size.x)
-	print(screen_size.y)
+
 	# Initialize the grid with the new dimensions
 	for x in range(width):
 		grid.append([])
