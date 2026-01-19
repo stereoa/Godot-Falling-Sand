@@ -16,8 +16,12 @@ The game uses a 2D array (grid) where each cell follows specific rules:
 - [x] Dynamic grid scaling to fit any mobile screen resolution.
 - [x] Basic sand gravity and diagonal displacement.
 - [x] Multi-touch/Drag support for spawning sand.
-- [ ] Liquid physics (Water).
-- [ ] Multiple brush sizes.
+- [x] Liquid physics (Water).
+- [x] Multiple brush sizes.
+- [ ] Density.
+- [ ] Temperature.
+- [ ] Durability/Health/Mass?
+- [ ] Saving
 - [ ] Performance optimizations (ImageTexture/Compute Shaders).
 
 ## Built With
