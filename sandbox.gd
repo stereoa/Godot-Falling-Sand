@@ -11,6 +11,8 @@ var sim: Simulation
 var types = {}
 var current_type = 0
 
+var brush_size = 1
+
 func _ready():
 	# Get the actual screen size in pixels
 	var screen_size = get_viewport_rect().size
@@ -20,6 +22,7 @@ func _ready():
 	height = int(screen_size.y / cell_size)
 
 	%ElementButtons.element_selected.connect(_on_element_changed)
+	%BrushSlider.value_changed.connect(_on_brush_size_changed)
 	
 	for id in ElementRegistry.registry.keys():
 		var element = ElementRegistry.get_element(id)
@@ -40,10 +43,24 @@ func _input(event):
 		
 		# Boundary check
 		if grid_x >= 0 and grid_x < width and grid_y >= 0 and grid_y < height:
-			sim.grid[grid_x][grid_y] = current_type
+			var x_start = max(0, grid_x - brush_size)
+			var x_end = min(width - 1, grid_x + brush_size)
+			
+			var y_start = max(0, grid_y - brush_size)
+			var y_end = min(height - 1, grid_y + brush_size)
+			
+			for x in range(x_start, x_end + 1):
+				for y in range(y_start, y_end + 1):
+					var dist = Vector2(x, y).distance_to(Vector2(grid_x, grid_y))
+					
+					if dist < brush_size:
+						sim.grid[x][y] = current_type
 
 func _process(_delta):
 	sim.step(types)
 	
 func _on_element_changed(id: int):
 	current_type = id
+
+func _on_brush_size_changed(value: float):
+	brush_size = int(value)
