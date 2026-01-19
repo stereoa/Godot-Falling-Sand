@@ -1,19 +1,15 @@
 extends Node2D
 
+@onready var renderer = $Renderer
+
 var width: int
 var height: int
 var cell_size = 10 
 
-var grid = []
+var sim: Simulation
 
-enum Type { EMPTY, SAND, WATER }
-
-var behaviors = {
-	Type.SAND: SandElement,
-	Type.WATER: WaterElement
-}
-
-var current_type = Type.WATER
+var types = {}
+var current_type = 0
 
 func _ready():
 	# Get the actual screen size in pixels
@@ -23,11 +19,18 @@ func _ready():
 	width = int(screen_size.x / cell_size)
 	height = int(screen_size.y / cell_size)
 
-	# Initialize the grid with the new dimensions
-	for x in range(width):
-		grid.append([])
-		for y in range(height):
-			grid[x].append(Type.EMPTY)
+	%ElementButtons.element_selected.connect(_on_element_changed)
+	
+	for id in ElementRegistry.registry.keys():
+		var element = ElementRegistry.get_element(id)
+		types[id] = element
+		
+	sim = Simulation.new()
+	sim.setup(width, height)
+	
+	renderer.grid_data = sim.grid
+	renderer.behaviors = types 
+	renderer.cell_size = cell_size
 
 func _input(event):
 	# Handles touch and drag for Android
@@ -37,29 +40,10 @@ func _input(event):
 		
 		# Boundary check
 		if grid_x >= 0 and grid_x < width and grid_y >= 0 and grid_y < height:
-			grid[grid_x][grid_y] = current_type
+			sim.grid[grid_x][grid_y] = current_type
 
 func _process(_delta):
-	update_physics()
-	queue_redraw()
-
-func _draw():
-	for x in range(width):
-		for y in range(height):
-			var type = grid[x][y]
-			if type != Type.EMPTY:
-				draw_rect(Rect2(x*cell_size, y*cell_size, cell_size, cell_size), behaviors[type].get_color())
-
-func update_physics():
-	# Loop bottom-to-top
-	for x in range(width):
-		for y in range(height - 1, -1, -1):
-			var type = grid[x][y]
-			if type == Type.EMPTY: continue
-			
-			var logic = behaviors[type]
-			var next_pos = logic.move(x, y, grid, width, height)
-			
-			if next_pos:
-				grid[next_pos.x][next_pos.y] = type
-				grid[x][y] = Type.EMPTY
+	sim.step(types)
+	
+func _on_element_changed(id: int):
+	current_type = id

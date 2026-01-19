@@ -1,9 +1,12 @@
 class_name WaterElement
 extends Element
 
-static func get_color():
+static func get_name() -> String: 
+	return "Water"
+				
+static func get_color() -> Color:
 	return Color.SKY_BLUE
-
+						
 static func move(x: int, y: int, grid: Array, width: int, height: int):
 	# Try down and diagonals first (same as sand)
 	if y + 1 < height:
