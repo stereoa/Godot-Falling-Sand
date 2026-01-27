@@ -5,7 +5,6 @@ extends Node2D
 var width: int
 var height: int
 var cell_size = 10
-
 var sim: Simulation
 
 var types = {}
